@@ -15,7 +15,7 @@ func (t *TeleBot) Fetch(content interface{}) *TeleBot {
 		t.Errors = append(t.Errors, err)
 	}
 	if !data.OK {
-		t.Errors = append(t.Errors, errors.New("data not ok"))
+		t.Errors = append(t.Errors, errors.New("data not ok fetch error"))
 		return t
 	}
 

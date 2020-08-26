@@ -102,7 +102,9 @@ func (t *TeleBot) SendPhoto(photo string, caption string) *TeleBot {
 		})
 	} else {
 		// FIXME 还不能发送本地照片
-		t.sender.Post(t.baseUrl+"/sendPhoto").Type("multipart").SendFile(photo, "photo")
+		t.sender.Post(t.baseUrl+"/sendPhoto").
+			Type("multipart").
+			SendFile(photo, "photo")
 	}
 
 	return t.receive(t.sender.Send(sendPhoto{
