@@ -22,6 +22,13 @@ func New() *TeleBot {
 	}
 }
 
+func Create(token, chatID string) *TeleBot {
+	t := &TeleBot{
+		sender: gorequest.New(),
+	}
+	return t.SetToken(token).SetChatID(chatID)
+}
+
 // ============== API ================
 // GetUpdates 获取更新
 func (t *TeleBot) GetUpdates() *TeleBot {
@@ -53,7 +60,7 @@ func (t *TeleBot) SendText(chatID, text, parseMode string) *TeleBot {
 	}).EndBytes())
 }
 
-// SendText 发送无格式的文本，需要先通过 SetChatID 设置chat_id
+// SendPlain 发送无格式的文本，需要先通过 SetChatID 设置chat_id
 func (t *TeleBot) SendPlain(text string) *TeleBot {
 	return t.SendText(t.chatID, text, "")
 }
