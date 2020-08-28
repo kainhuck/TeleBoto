@@ -14,6 +14,7 @@ type TeleBot struct {
 	Body                []byte
 	Response            gorequest.Response
 	disableNotification bool // 发送消息是否禁用通知
+	ParseMode           string
 }
 
 func New() *TeleBot {
@@ -40,6 +41,11 @@ func (t *TeleBot) GetMe() *TeleBot {
 	return t.simpleSend("/getMe")
 }
 
+// GetMyCommands 获取当前机器人支持的指令
+func (t *TeleBot) GetMyCommands() *TeleBot {
+	return t.simpleSend("/getMyCommands")
+}
+
 func (t *TeleBot) GetChat() *TeleBot {
 	return t.receive(t.sender.Post(t.baseUrl + "/getChat").SendStruct(getChat{
 		ChatID: t.chatID,
@@ -47,7 +53,7 @@ func (t *TeleBot) GetChat() *TeleBot {
 }
 
 // Send 这是一个发送文字的原始方法. chatID 为 int 类型或者string
-func (t *TeleBot) SendText(chatID, text, parseMode string) *TeleBot {
+func (t *TeleBot) SendText(chatID, text string) *TeleBot {
 	if len(chatID) == 0 {
 		t.Errors = append(t.Errors, errors.New("missing chat_id"))
 		return t
@@ -55,24 +61,24 @@ func (t *TeleBot) SendText(chatID, text, parseMode string) *TeleBot {
 	return t.receive(t.sender.Post(t.baseUrl + "/sendMessage").SendStruct(sendMessage{
 		ChatID:              chatID,
 		Text:                text,
-		ParseMode:           parseMode,
+		ParseMode:           t.ParseMode,
 		DisableNotification: t.disableNotification,
 	}).EndBytes())
 }
 
 // SendPlain 发送无格式的文本，需要先通过 SetChatID 设置chat_id
 func (t *TeleBot) SendPlain(text string) *TeleBot {
-	return t.SendText(t.chatID, text, "")
+	return t.SetParseMod("").SendText(t.chatID, text)
 }
 
 // SendMarkdown 发送markdown格式文本
 func (t *TeleBot) SendMarkdown(text string) *TeleBot {
-	return t.SendText(t.chatID, text, "Markdown")
+	return t.SetParseMod("Markdown").SendText(t.chatID, text)
 }
 
 // SendHTML 发送HTML格式文本
 func (t *TeleBot) SendHTML(text string) *TeleBot {
-	return t.SendText(t.chatID, text, "HTML")
+	return t.SetParseMod("HTML").SendText(t.chatID, text)
 }
 
 // ForwardMessage 转发信息
@@ -115,6 +121,12 @@ func (t *TeleBot) SendPhoto(photo string, caption string) *TeleBot {
 	}).EndBytes())
 }
 
+func (t *TeleBot) SetMyCommands(cmds []BotCommand) *TeleBot {
+	return t.receive(t.sender.Post(t.baseUrl + "/setMyCommands").Send(struct {
+		Commands []BotCommand `json:"commands"`
+	}{cmds}).EndBytes())
+}
+
 // =============== config ===============
 func (t *TeleBot) SetProxy(proxyUrl string) *TeleBot {
 	t.sender.Proxy(proxyUrl)
@@ -132,6 +144,11 @@ func (t *TeleBot) SetChatID(chatID string) *TeleBot {
 
 func (t *TeleBot) SetToken(token string) *TeleBot {
 	t.baseUrl = fmt.Sprintf("https://api.telegram.org/bot%s", token)
+	return t
+}
+
+func (t *TeleBot) SetParseMod(mode string) *TeleBot {
+	t.ParseMode = mode
 	return t
 }
 

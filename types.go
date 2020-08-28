@@ -104,3 +104,8 @@ type File struct {
 	FileSize     int    `json:"file_size"`
 	FilePath     string `json:"file_path"`
 }
+
+type BotCommand struct {
+	Command     string `json:"command"`
+	Description string `json:"description"`
+}
